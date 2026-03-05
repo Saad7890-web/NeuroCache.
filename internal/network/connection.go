@@ -19,8 +19,8 @@ func handleConnection(conn net.Conn) {
 			return
 		}
 
-		conn.Write([]byte("OK\n"))
-
 		_ = cmd
+
+		conn.Write([]byte("+OK\r\n"))
 	}
 }
