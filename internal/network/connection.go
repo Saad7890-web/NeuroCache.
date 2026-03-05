@@ -3,6 +3,8 @@ package network
 import (
 	"bufio"
 	"net"
+
+	"github.com/Saad7890-web/neurocache/internal/protocol"
 )
 
 func handleConnection(conn net.Conn){
@@ -11,12 +13,15 @@ func handleConnection(conn net.Conn){
 	reader := bufio.NewReader(conn)
 
 	for {
-		data, err := reader.ReadBytes('\n')
+
+		
+		cmd, err := protocol.ParseCommand(reader)
 		if err != nil {
 			return
 		}
 
 		conn.Write([]byte("OK\n"))
-		_ = data
+
+		_ = cmd
 	}
 }
