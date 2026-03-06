@@ -4,10 +4,11 @@ import (
 	"bufio"
 	"net"
 
+	"github.com/Saad7890-web/neurocache/internal/engine"
 	"github.com/Saad7890-web/neurocache/internal/protocol"
 )
 
-func handleConnection(conn net.Conn) {
+func handleConnection(conn net.Conn, eng *engine.Engine) {
 	defer conn.Close()
 
 	reader := bufio.NewReader(conn)
@@ -19,8 +20,8 @@ func handleConnection(conn net.Conn) {
 			return
 		}
 
-		_ = cmd
+		response := eng.Execute(cmd)
 
-		conn.Write([]byte("+OK\r\n"))
+		conn.Write([]byte(response))
 	}
 }
