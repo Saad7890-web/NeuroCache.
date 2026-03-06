@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/Saad7890-web/neurocache/internal/kv"
 	"github.com/Saad7890-web/neurocache/internal/protocol"
@@ -24,13 +25,25 @@ func (e *Engine) Execute(cmd *protocol.Command) string {
 	switch cmd.Name {
 
 	case "SET":
-		if len(cmd.Args) != 2 {
-			return "-ERR wrong number of arguments\r\n"
+		if len(cmd.Args) < 2 {
+		return "-ERR wrong number of arguments\r\n"
+	}
+
+	key := cmd.Args[0]
+	value := cmd.Args[1]
+
+	ttl := 0
+
+	if len(cmd.Args) == 4 && cmd.Args[2] == "EX" {
+		t, err := strconv.Atoi(cmd.Args[3])
+		if err == nil {
+			ttl = t
 		}
+	}
 
-		e.store.Set(cmd.Args[0], cmd.Args[1])
-		return "+OK\r\n"
+	e.store.Set(key, value, ttl)
 
+	return "+OK\r\n"
 	case "GET":
 		if len(cmd.Args) != 1 {
 			return "-ERR wrong number of arguments\r\n"
