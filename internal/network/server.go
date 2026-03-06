@@ -28,6 +28,6 @@ func (s *Server) Start() error {
 		if err != nil {
 			continue
 		}
-		go handleConnection(conn)
+		go handleConnection(conn, s.engine)
 	}
 }
