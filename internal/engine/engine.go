@@ -14,8 +14,12 @@ type Engine struct {
 }
 
 func NewEngine() *Engine {
+
+	store := kv.NewStore()
+
+	store.StartExpirationWorker()
 	return &Engine{
-		store: kv.NewStore(),
+		store: store,
 	}
 }
 
