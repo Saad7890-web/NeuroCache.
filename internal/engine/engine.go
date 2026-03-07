@@ -4,22 +4,19 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/Saad7890-web/neurocache/internal/kv"
+	"github.com/Saad7890-web/neurocache/internal/cluster"
 	"github.com/Saad7890-web/neurocache/internal/protocol"
 )
 
 
 type Engine struct {
-	store *kv.Store
+	shards *cluster.ShardManager
 }
 
 func NewEngine() *Engine {
 
-	store := kv.NewStore()
-
-	store.StartExpirationWorker()
 	return &Engine{
-		store: store,
+		shards: cluster.NewShardManager(8),
 	}
 }
 
@@ -45,7 +42,7 @@ func (e *Engine) Execute(cmd *protocol.Command) string {
 		}
 	}
 
-	e.store.Set(key, value, ttl)
+	e.shards.Set(key, value, ttl)
 
 	return "+OK\r\n"
 	case "GET":
@@ -53,7 +50,7 @@ func (e *Engine) Execute(cmd *protocol.Command) string {
 			return "-ERR wrong number of arguments\r\n"
 		}
 
-		val, ok := e.store.Get(cmd.Args[0])
+		val, ok := e.shards.Get(cmd.Args[0])
 		if !ok {
 			return "$-1\r\n"
 		}
@@ -65,7 +62,7 @@ func (e *Engine) Execute(cmd *protocol.Command) string {
 			return "-ERR wrong number of arguments\r\n"
 		}
 
-		ok := e.store.Del(cmd.Args[0])
+		ok := e.shards.Del(cmd.Args[0])
 
 		if ok {
 			return ":1\r\n"
