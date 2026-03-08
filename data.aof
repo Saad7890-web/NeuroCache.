@@ -1,0 +1,3 @@
+SET user1 alice
+SET user2 bob
+DEL user1

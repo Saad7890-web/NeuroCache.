@@ -5,18 +5,21 @@ import (
 	"strconv"
 
 	"github.com/Saad7890-web/neurocache/internal/cluster"
+	"github.com/Saad7890-web/neurocache/internal/persistence"
 	"github.com/Saad7890-web/neurocache/internal/protocol"
 )
 
 
 type Engine struct {
 	shards *cluster.ShardManager
+	aof *persistence.AOF
 }
 
 func NewEngine() *Engine {
-
+	aof, _ := persistence.NewAOF("data.aof")
 	return &Engine{
 		shards: cluster.NewShardManager(8),
+		aof: aof,
 	}
 }
 
@@ -41,7 +44,7 @@ func (e *Engine) Execute(cmd *protocol.Command) string {
 			ttl = t
 		}
 	}
-
+	e.aof.Write(fmt.Sprintf("SET %s %s", key, value))
 	e.shards.Set(key, value, ttl)
 
 	return "+OK\r\n"
@@ -61,7 +64,7 @@ func (e *Engine) Execute(cmd *protocol.Command) string {
 		if len(cmd.Args) != 1 {
 			return "-ERR wrong number of arguments\r\n"
 		}
-
+		e.aof.Write(fmt.Sprintf("DEL %s", cmd.Args[0]))
 		ok := e.shards.Del(cmd.Args[0])
 
 		if ok {
